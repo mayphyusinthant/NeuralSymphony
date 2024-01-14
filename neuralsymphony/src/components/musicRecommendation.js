@@ -1,4 +1,4 @@
-import React, {  state, useState,  useRef,  useEffect } from 'react';
+import React, {  state, useState, useRef, useEffect } from 'react';
 
 const Music = () => {
   const [musicList, setMusicList] = useState([
@@ -29,12 +29,6 @@ const Music = () => {
     }
   ]);
 
-    const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-
-    const handleNextTrack = () => {
-      setCurrentTrackIndex((prev) => (prev + 1) % musicList.length);
-
-    };
 
     return (
       <div className="Music">
@@ -44,12 +38,7 @@ const Music = () => {
               <h4>{music.name}</h4><br/>
               <img src={music.image} className='col-9' alt={music.name} />
               {/* Assuming you have a MusicPlayer component */}
-              <MusicPlayer audioFile={music.audioFile} musicList={musicList} 
-              index = {index}
-              currentTrackIndex={index}
-              setCurrentTrackIndex={setCurrentTrackIndex}
-              onNextTrack={handleNextTrack}
-              />
+              <MusicPlayer audioFile={music.audioFile} musicList={musicList} />
             </div>
           ))}
         </div>
@@ -57,7 +46,8 @@ const Music = () => {
     );
   };
 
-const MusicPlayer = ({ musicList, audioFile, index, currentTrackIndex, setCurrentTrackIndex, onNextTrack }) => {
+const MusicPlayer = ({ audioFile, musicList }) => {
+
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -65,8 +55,7 @@ const MusicPlayer = ({ musicList, audioFile, index, currentTrackIndex, setCurren
 
   const playIcon = require('../images/playIcon.png');
   const pauseIcon = require('../images/pauseIcon.png');
-  const prevIcon = require('../images/prevIcon.png');
-  const nextIcon = require('../images/nextIcon.png');
+
 
   useEffect(() => {
     const audioElement = audioRef.current;
@@ -93,7 +82,7 @@ const MusicPlayer = ({ musicList, audioFile, index, currentTrackIndex, setCurren
       audioElement.removeEventListener('timeupdate', () => {});
       audioElement.removeEventListener('ended', () => {});
     };
-  }, [currentTrackIndex, musicList, audioFile]);
+  }, [ musicList, audioFile]);
 
   const togglePlay = () => {
     const audioElement = audioRef.current;
@@ -102,69 +91,12 @@ const MusicPlayer = ({ musicList, audioFile, index, currentTrackIndex, setCurren
       audioElement.pause();
     } else {
       audioElement.play();
-      console.log("Playing: " + currentTrackIndex);
     }
 
     setIsPlaying(!isPlaying);
   };
 
 
-  // const handlePrevious = () => {
-  //   if (trackIndex === 0) {
-  //     let lastTrackIndex = musicList.length - 1;
-  //     setTrackIndex(lastTrackIndex);
-  //     setCurrentTrackIndex(musicList[lastTrackIndex]);
-  //   } else {
-  //     setTrackIndex((prev) => prev - 1);
-  //     setCurrentTrackIndex(musicList[trackIndex - 1]);
-  //   }
-  //   setIsPlaying(true);
-
-  // };
-  
-  // const handleNext = () => {
-  //   if (currentTrackIndex >= musicList.length - 1) {
-  //     setCurrentTrackIndex(0);
-  //   } else {
-  //     console.log('Current: ' + currentTrackIndex);
-  //     setCurrentTrackIndex((prevIndex) => prevIndex + 1);
-  //     console.log('Next: ' + (currentTrackIndex + 1));
-  //   }
-  
-  //   const audioElement = audioRef.current;
-  //   console.log('audio info' + audioRef.current)
-  //   audioElement.src = musicList[currentTrackIndex].audioFile; // Update the audio source
-  //   audioElement.play();
-  //   onNextTrack(); // Notify the parent component about the next track
-  // };
-
-
-  const handleNext = () => {
-    // Calculate the index of the next track
-    var nextIndex = (currentTrackIndex + 1) % musicList.length;
-  
-    // Update the current track index to the next index
-    setCurrentTrackIndex(nextIndex);
-    
-
-    // Pause the current music before playing next
-    audioRef.current.pause();
-    
-    // Access the audio element directly and then get its audioRef
-    var audioElement = document.getElementById(`audio-${nextIndex}`);
-    
-    // Check if the audioRef is found
-    if (audioElement) {
-      // Update the audio source and play the next track
-      console.log(`audio-${nextIndex}`);
-      audioElement.play();
-    } else {
-      console.error(`Audio element with ID 'audio-${nextIndex}' not found.`);
-    }
-    // Notify the parent component about the next track
-    onNextTrack();
-  };
-  
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
@@ -184,20 +116,18 @@ const MusicPlayer = ({ musicList, audioFile, index, currentTrackIndex, setCurren
 
   return (
     <div className="music-player">
-      {/* Previous button */}
-      <img src={prevIcon} alt="Previous" id="icon" />
+     
 
       {/* Play/Pause button */}
       <img src={isPlaying ? pauseIcon : playIcon} alt="Play/Pause" onClick={togglePlay} id="icon" />
 
-      {/* Next button */}
-      <img src={nextIcon} alt="Next" onClick={handleNext} id="icon" /><br />
+        <br/>
 
       {/* Current time and duration */}
       <b>{formatTime(currentTime)} / {formatTime(duration)}</b>
 
       {/* Audio element */}
-      <audio ref={audioRef} controls={false} id={`audio-${index}`}>
+      <audio ref={audioRef} controls={false} >
         <source src={audioFile} type="audio/mp3" />
         Your browser does not support the audio element.
       </audio>
